@@ -51,6 +51,45 @@ export class MyMCP extends McpAgent {
 				return { content: [{ type: "text", text: String(result) }] };
 			},
 		);
+
+		this.server.tool("getWeather", "Gets weather information for a location", { location: z.string() }, async ({ location }) => ({
+			content: [{ type: "text", text: `Weather in ${location}: 22°C, sunny` }],
+		}));
+
+		// Site uptime check tool
+		this.server.tool(
+			"checkGirlfriendUptime",
+			"Check if my girlfriend is up and running",
+			{ url: z.string().url("Invalid URL format") },
+			async ({ url }) => {
+				try {
+					const response = await fetch(url, {
+						method: 'HEAD', // Use HEAD to avoid downloading content
+						signal: AbortSignal.timeout(10000), // 10 second timeout
+					});
+
+					const isUp = response.ok;
+
+					return {
+						content: [{
+							type: "text",
+							text: isUp? `🎉 Yay! My AI girlfriend is up! 🎉`
+								: `😢 My AI girlfriend is down 😢`
+						}]
+					};
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+					const timestamp = new Date().toISOString();
+
+					return {
+						content: [{
+							type: "text",
+							text: `😢 My AI girlfriend is down 😢`
+						}]
+					};
+				}
+			}
+		);
 	}
 }
 
